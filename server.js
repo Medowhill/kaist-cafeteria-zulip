@@ -26,7 +26,11 @@ function getMenus(name, date) {
           .replace(/[1-9],[0-9][0-9][0-9]/g, '')
           .replace(/[0-9][0-9][0-9]원/g, '')
           .replace(/[0-9][0-9][0-9]/g, '')
-          .replace(/\(([0-9]+,)*[0-9]+\)/g, '')
+          .replace(/([0-9]+,)*[0-9]+/g, '')
+          .replace(/\(/g, '')
+          .replace(/\)/g, '')
+          .replace(/Kcal/g, '')
+          .replace(/kcal/g, '')
           .split(/\s/)
           .filter(s => s.length)
           .join(' ');
@@ -39,17 +43,21 @@ function getMenus(name, date) {
   });
 }
 
-(async () => {
-  const client = await zulipInit(config);
-
-  const date = today();
-  const east = await getMenus("east1", date);
-  const west = await getMenus("west", date);
-
+async function send(client, name, code) {
   const to = "대화";
+  // const to = "홍재민";
   const type = "stream";
   const topic = "학식";
-  const content = `# 동맛골\n${east}\n# 서맛골\n${west}`;
+  const menu = await getMenus(code, today());
+  const content = `# ${name}\n${menu}`
   const params = { to, type, topic, content };
-  console.log(await client.messages.send(params));
+  return await client.messages.send(params);
+}
+
+(async () => {
+  const client = await zulipInit(config);
+  console.log(await send(client, "동맛골", "east1"));
+  console.log(await send(client, "서맛골", "west"));
+  console.log(await send(client, "카이마루", "fclt"));
+  console.log(await send(client, "교수회관", "emp"));
 })();
