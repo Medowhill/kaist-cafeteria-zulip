@@ -196,7 +196,7 @@ async function normalizeWithGPT(text) {
       { role: "assistant", content: assistant5 },
       { role: "user", content: text },
     ],
-    model: "gpt-3.5-turbo",
+    model: "gpt-4o-mini",
     temperature: 0,
   });
   const arr = JSON.parse(completion.choices[0].message.content);
@@ -259,7 +259,14 @@ async function getMenus(name, date) {
     const breakfast = await normalize(breakfastString);
     const lunch = await normalize(lunchString);
     const dinner = await normalize(dinnerString);
-    return `#### 아침\n${breakfast}\n#### 점심\n${lunch}\n#### 저녁\n${dinner}`;
+    const arr = [];
+    if (breakfast !== "")
+      arr.push(`#### 아침\n${breakfast}`);
+    if (lunch !== "")
+      arr.push(`#### 점심\n${lunch}`);
+    if (dinner !== "")
+      arr.push(`#### 저녁\n${dinner}`);
+    return arr.length === 0 ? "" : arr.join("\n");
   } catch (e) {
     return "";
   }
@@ -271,14 +278,18 @@ async function send(client, name, code) {
   const type = "stream";
   const topic = "학식";
   const menu = await getMenus(code, today());
-  const content = `### ${name}\n${menu}`
-  const params = { to, type, topic, content };
-  return await client.messages.send(params);
+  if (menu != "") {
+    const content = `### ${name}\n${menu}`
+    const params = { to, type, topic, content };
+    return await client.messages.send(params);
+  }
+  return "";
 }
 
 async function main() {
   const client = await zulipInit(config);
   console.log(await send(client, "동맛골", "east1"));
+  console.log(await send(client, "동측교직원", "east2"));
   console.log(await send(client, "서맛골", "west"));
   console.log(await send(client, "카이마루", "fclt"));
   console.log(await send(client, "교수회관", "emp"));
