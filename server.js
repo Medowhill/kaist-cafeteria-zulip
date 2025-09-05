@@ -25,7 +25,7 @@ const user1 = `<한식코너 3,000원>
 const assistant1 = `[
   {
     "course": "한식코너",
-    "menu": [
+    "menus": [
       "쌀밥",
       "건새우미역국",
       "미트볼케찹조림",
@@ -37,7 +37,7 @@ const assistant1 = `[
   },
   {
     "course": "아메리칸",
-    "menu": [
+    "menus": [
       "에그포테이토샌드위치",
       "옥수수스프",
       "치킨너겟",
@@ -68,7 +68,7 @@ const user2 = `<Cafeteria>
 const assistant2 = `[
   {
     "course": "Cafeteria",
-    "menu": [
+    "menus": [
       "흑미밥",
       "오곡밥",
       "시금치된장국",
@@ -84,7 +84,7 @@ const assistant2 = `[
   },
   {
     "course": "일품코너 1",
-    "menu": [
+    "menus": [
       "마파두부덮밥",
       "시금치된장국",
       "어니언돈육간장강정",
@@ -111,7 +111,7 @@ const user3 = `<한식코너  4,500원>
 const assistant3 = `[
   {
     "course": "한식코너",
-    "menu": [
+    "menus": [
       "쌀밥",
       "김칫국",
       "닭살야채볶음",
@@ -123,7 +123,7 @@ const assistant3 = `[
   },
   {
     "course": "일품코너",
-    "menu": [
+    "menus": [
       "유부김치가락국수",
       "맛초킹만두강정",
       "그린샐러드",
@@ -144,7 +144,7 @@ const user4 = `백미밥
 const assistant4 = `[
   {
     "course": "",
-    "menu": [
+    "menus": [
       "백미밥",
       "경상도식소고기국",
       "두부조림",
@@ -168,7 +168,7 @@ const user5 = `자율배식 (5,000)
 const assistant5 = `[
   {
     "course": "자율배식",
-    "menu": [
+    "menus": [
       "목살필라프",
       "근대된장국",
       "생선까스&소스",
@@ -181,9 +181,10 @@ const assistant5 = `[
 ]`;
 
 async function normalizeWithGPT(text) {
-  const completion = await openai.chat.completions.create({
-    messages: [
-      { role: "system", content: system },
+  const response = await openai.responses.create({
+    model: "gpt-5-nano",
+    input: [
+      { role: "developer", content: system },
       { role: "user", content: user1 },
       { role: "assistant", content: assistant1 },
       { role: "user", content: user2 },
@@ -195,14 +196,12 @@ async function normalizeWithGPT(text) {
       { role: "user", content: user5 },
       { role: "assistant", content: assistant5 },
       { role: "user", content: text },
-    ],
-    model: "gpt-4o-mini",
-    temperature: 0,
+    ]
   });
-  const arr = JSON.parse(completion.choices[0].message.content);
+  const arr = JSON.parse(response.output_text);
   return arr.map(obj => {
     const course = obj.course === "" ? "" : `**${obj.course}** `;
-    return `${course}${obj.menu.join(", ")}`;
+    return `${course}${obj.menus.join(", ")}`;
   }).join("\n");
 }
 
